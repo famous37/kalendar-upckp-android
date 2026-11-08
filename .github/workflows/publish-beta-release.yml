@@ -1,0 +1,52 @@
+name: Publish UPCKP Calendar 3.0 Beta Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-beta-release.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository and release notes
+        uses: actions/checkout@v4
+
+      - name: Download APK from verified successful build
+        uses: actions/download-artifact@v4
+        with:
+          name: UPCKP-debug-APK
+          run-id: 42471016584
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release-apk
+
+      - name: Verify and prepare APK
+        run: |
+          set -euo pipefail
+          test -s release-apk/app-debug.apk
+          unzip -t release-apk/app-debug.apk | tail -n 1
+          cp release-apk/app-debug.apk Kalendar_UPCKP_3.0_Beta1.apk
+          sha256sum Kalendar_UPCKP_3.0_Beta1.apk
+
+      - name: Publish GitHub prerelease and attach APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="v3.0.0-beta.1"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists; not overwriting it."
+          else
+            gh release create "$tag" Kalendar_UPCKP_3.0_Beta1.apk \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Церковний календар УПЦ КП 3.0 Beta 1" \
+              --notes-file RELEASE_NOTES.md \
+              --prerelease
+          fi
