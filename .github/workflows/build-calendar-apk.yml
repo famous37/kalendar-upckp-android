@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Kalendar_UPCKP_3.0_Source_REUPLOAD.zip'
+      - 'Kalendar_UPCKP_3.0_Source_2026-11-08.zip'
       - '.github/workflows/build-calendar-apk.yml'
 
 permissions:
@@ -20,9 +20,9 @@ jobs:
 
       - name: Extract Android project
         run: |
-          test -f Kalendar_UPCKP_3.0_Source_REUPLOAD.zip || { echo "::error::Upload Kalendar_UPCKP_3.0_Source_REUPLOAD.zip to the repository root first."; exit 1; }
+          test -f Kalendar_UPCKP_3.0_Source_2026-11-08.zip || { echo "::error::Upload Kalendar_UPCKP_3.0_Source_2026-11-08.zip to the repository root first."; exit 1; }
           mkdir -p project
-          unzip -q Kalendar_UPCKP_3.0_Source_REUPLOAD.zip -d project
+          unzip -q Kalendar_UPCKP_3.0_Source_2026-11-08.zip -d project
           test -f project/app/build.gradle || { echo "::error::Android project not found in ZIP root"; exit 1; }
 
       - name: Set up Java 17
