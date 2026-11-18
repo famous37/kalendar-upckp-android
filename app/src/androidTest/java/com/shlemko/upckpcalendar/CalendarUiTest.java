@@ -1,6 +1,9 @@
 package com.shlemko.upckpcalendar;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import java.util.GregorianCalendar;
+import static org.junit.Assert.*;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +20,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 public class CalendarUiTest {
     @Rule public ActivityScenarioRule<MainActivity> rule=
         new ActivityScenarioRule<>(MainActivity.class);
+    @Test public void source2018IsCompleteAndYearScoped() throws Exception {
+        SourceYear2018 source=new SourceYear2018(
+            InstrumentationRegistry.getInstrumentation().getTargetContext());
+        assertNotNull(source.get(new GregorianCalendar(2018,0,1)));
+        assertNotNull(source.get(new GregorianCalendar(2018,11,31)));
+        assertNull(source.get(new GregorianCalendar(2026,10,18)));
+    }
     @Test public void mainScreenAndOfflineMonthNavigation(){
         onView(withText("Календар УПЦ КП")).check(matches(isDisplayed()));
         onView(withContentDescription("Календар місяця")).perform(click());
