@@ -377,21 +377,12 @@ public final class MainActivity extends Activity {
             new AlertDialog.Builder(this).setTitle("Читання 2018 року")
                 .setMessage(header+(scriptures.isEmpty()?"Окремих посилань не виділено.":scriptures)+
                     "\n\nРядки читань індексовано з друкованого джерела. Для богослужбового використання звіряйте з оригіналом.")
-                .setNeutralButton("Джерельний витяг",(dlg,which)->showSourceExcerpt2018(d,pageRef))
                 .setPositiveButton("Закрити",null).show();
         } catch(Exception e){
             new AlertDialog.Builder(this).setTitle("Не вдалося відкрити джерело")
                 .setMessage("Перевірте цілісність даних календаря 2018 року.")
                 .setPositiveButton("Закрити",null).show();
         }
-    }
-
-    private void showSourceExcerpt2018(JSONObject source,String pageRef){
-        String excerpt=source.optString("source_excerpt_2018","").trim();
-        new AlertDialog.Builder(this).setTitle("Архівний витяг · 2018")
-            .setMessage("Сторінки PDF: "+pageRef+"\n\n"+excerpt+
-                "\n\nАвтоматичне перенесення з друкованого макета: можливі розриви рядків і колонок. За автентичністю тексту звертайтеся до оригіналу PDF.")
-            .setPositiveButton("Закрити",null).show();
     }
 
     private void showAbout(){
