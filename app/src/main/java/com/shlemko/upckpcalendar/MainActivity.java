@@ -1,6 +1,7 @@
 package com.shlemko.upckpcalendar;
 
 import android.app.Activity;
+import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -43,6 +44,8 @@ public final class MainActivity extends Activity {
     private ScrollView scrolling;
     private int initialScroll;
     private TextView title, oldDate, newDate, greeting, badge, saints, specialNote, movableFeast;
+    private TextView sourceStatus;
+    private Button sourceButton;
     private ImageButton favoriteButton;
     private boolean dark;
     private int fontSize;
@@ -202,6 +205,18 @@ public final class MainActivity extends Activity {
         saints=text("",fontSize,ink,false);saints.setTextIsSelectable(true);
         memCard.addView(saints,margin(-1,-2,0,14,0,0));
         content.addView(memCard,lp(-1,-2));
+
+        TextView sourceTitle=text("Читання та богослужбові вказівки",19,ink,true);
+        content.addView(sourceTitle,margin(-1,-2,2,24,0,10));
+        LinearLayout sourceCard=vertical();
+        sourceCard.setPadding(dp(18),dp(17),dp(18),dp(18));
+        sourceCard.setBackground(shape(surface,20,border));
+        sourceStatus=text("",14,subtle,false);
+        sourceCard.addView(sourceStatus,lp(-1,-2));
+        sourceButton=button("Відомості про читання",false);
+        sourceButton.setOnClickListener(v->showYearReadings());
+        sourceCard.addView(sourceButton,margin(-1,48,0,13,0,0));
+        content.addView(sourceCard,lp(-1,-2));
         TextView footer=text("Пам’яті святих: база наданого календаря 1.1uk.\n"
             + "Рухомі свята обчислено за православною пасхалією. Правила посту — довідкові, "
             + "не замінюють щорічних офіційних богослужбових вказівок УПЦ КП.",11,subtle,false);
@@ -246,6 +261,10 @@ public final class MainActivity extends Activity {
         if(hasFeast&&body.equals("• "+headline))body="";
         saints.setVisibility(body.isEmpty()?View.GONE:View.VISIBLE);
         saints.setText(body);
+        sourceStatus.setText(y==2018
+            ?"Читання з друкованого календаря УПЦ КП за 2018 рік. Додано сторінки джерела."
+            :"Підтверджених читань саме на "+y+" рік у базі поки немає. Читання 2018 року не підміняють поточний рік.");
+        sourceButton.setText(y==2018?"Читання за 2018 рік":"Про джерело читань");
         prefs.edit().putLong("last_selected_day",selected.getTimeInMillis()).apply();
         // Avoid repeated view-wide alpha animations that cause flicker during day changes.
     }
@@ -335,11 +354,51 @@ public final class MainActivity extends Activity {
         Intent send=new Intent(Intent.ACTION_SEND);send.setType("text/plain");send.putExtra(Intent.EXTRA_TEXT,msg);
         startActivity(Intent.createChooser(send,"Поділитися днем"));
     }
+    private void showYearReadings(){
+        int year=selected.get(Calendar.YEAR);
+        if(year!=2018){
+            new AlertDialog.Builder(this).setTitle("Читання та богослужбові вказівки")
+                .setMessage("Підтверджених читань для "+year+" року наразі немає.\n\n"+
+                    "Збережено першоджерело за 2018 рік. Його рухомі читання та приписи не можна переносити на інші роки. "+
+                    "Пам’яті святих і дати нерухомих свят відображаються окремо за старим стилем.")
+                .setPositiveButton("Зрозуміло",null).show();
+            return;
+        }
+        try {
+            JSONObject d=new SourceYear2018(this).get(selected);
+            if(d==null)throw new IllegalStateException("День не знайдено");
+            String scriptures=d.optString("scripture_lines_2018","").replace("\\n","\n");
+            org.json.JSONArray pages=d.getJSONArray("source_pages");
+            String pageRef=pages.getInt(0)==pages.getInt(1)
+                ?String.valueOf(pages.getInt(0))
+                :pages.getInt(0)+"–"+pages.getInt(1);
+            String header="Першоджерело: «Православний церковний календар на 2018 рік»\n"+
+                "Сторінка PDF: "+pageRef+"\n\n";
+            new AlertDialog.Builder(this).setTitle("Читання 2018 року")
+                .setMessage(header+(scriptures.isEmpty()?"Окремих посилань не виділено.":scriptures)+
+                    "\n\nРядки читань індексовано з друкованого джерела. Для богослужбового використання звіряйте з оригіналом.")
+                .setNeutralButton("Джерельний витяг",(dlg,which)->showSourceExcerpt2018(d,pageRef))
+                .setPositiveButton("Закрити",null).show();
+        } catch(Exception e){
+            new AlertDialog.Builder(this).setTitle("Не вдалося відкрити джерело")
+                .setMessage("Перевірте цілісність даних календаря 2018 року.")
+                .setPositiveButton("Закрити",null).show();
+        }
+    }
+
+    private void showSourceExcerpt2018(JSONObject source,String pageRef){
+        String excerpt=source.optString("source_excerpt_2018","").trim();
+        new AlertDialog.Builder(this).setTitle("Архівний витяг · 2018")
+            .setMessage("Сторінки PDF: "+pageRef+"\n\n"+excerpt+
+                "\n\nАвтоматичне перенесення з друкованого макета: можливі розриви рядків і колонок. За автентичністю тексту звертайтеся до оригіналу PDF.")
+            .setPositiveButton("Закрити",null).show();
+    }
+
     private void showAbout(){
         new AlertDialog.Builder(this).setTitle("Календар УПЦ КП · 3.1")
             .setMessage("Новий нативний застосунок для Android 7 (API 24) і новіших.\n\n"+
                 "Розробник: Vasyl Shlemko\n"+
-                "Оригінальна база пам’ятей: наданий календар 1.1uk.\n\n"+
+                "Оригінальна база пам’ятей: календар 1.1uk. Джерело звірки: друкований календар УПЦ КП за 2018 рік.\n\n"+
                 "Дати — за юліанським (старим) стилем, із точним перерахунком на григоріанський календар. " +
                 "Пости й рухомі свята розраховано довідково; звіряйте з офіційним річним календарем УПЦ КП. Застосунок не є офіційним виданням церкви.\n\n"+
                 "Застосунок працює повністю офлайн. Дані не передаються в мережу.")
