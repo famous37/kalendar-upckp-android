@@ -146,6 +146,8 @@ public final class MonthActivity extends Activity {
             }
             dates.addView(tile,cellParams(71));
         }
+        dates.animate().cancel();dates.setAlpha(.94f);
+        dates.animate().alpha(1f).setDuration(160).start();
     }
     private void select(long millis){
         Intent result=new Intent();result.putExtra(EXTRA_DATE,millis);

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
@@ -41,7 +43,7 @@ public final class MainActivity extends Activity {
     private ScrollView scrolling;
     private int initialScroll;
     private TextView title, oldDate, newDate, greeting, badge, saints, specialNote, movableFeast;
-    private Button favoriteButton;
+    private ImageButton favoriteButton;
     private boolean dark;
     private int fontSize;
     private int background, surface, ink, subtle, accent, border;
@@ -128,6 +130,16 @@ public final class MainActivity extends Activity {
         b.setBackground(shape(filled?(dark?Color.parseColor("#81602D"):Color.parseColor("#314C60")):surface,15,filled?0:border));
         b.setPadding(dp(10),0,dp(10),0);b.setMinHeight(dp(50));return b;
     }
+    private ImageButton iconButton(int image,String description){
+        ImageButton b=new ImageButton(this);
+        b.setImageResource(image);
+        b.setContentDescription(description);
+        b.setBackground(shape(surface,15,border));
+        b.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        b.setPadding(dp(12),dp(12),dp(12),dp(12));
+        b.setImageTintList(ColorStateList.valueOf(ink));
+        return b;
+    }
     private void build(){
         int scrollTo=scrolling==null?initialScroll:scrolling.getScrollY();
         palette();
@@ -145,11 +157,11 @@ public final class MainActivity extends Activity {
         TextView caption=text("Юліанський календар · офлайн",12,subtle,false);
         texts.addView(heading);texts.addView(caption,margin(-1,-2,0,2,0,0));
         toolbar.addView(texts,new LinearLayout.LayoutParams(0,-2,1));
-        favoriteButton=button("☆",false);favoriteButton.setContentDescription("Додати день до вибраного");
+        favoriteButton=iconButton(R.drawable.ic_star,"Додати день до вибраного");
         favoriteButton.setOnClickListener(v->toggleFavorite());toolbar.addView(favoriteButton,margin(43,49,3,0,0,0));
-        Button dateIcon=button("▦",false);dateIcon.setContentDescription("Календар місяця");
+        ImageButton dateIcon=iconButton(R.drawable.ic_calendar,"Календар місяця");
         dateIcon.setOnClickListener(v->showMonthPicker());toolbar.addView(dateIcon,margin(43,49,3,0,0,0));
-        Button menu=button("⋮",false);menu.setContentDescription("Відкрити меню й налаштування");
+        ImageButton menu=iconButton(R.drawable.ic_more,"Відкрити меню й налаштування");
         menu.setOnClickListener(v->showMenu(menu));toolbar.addView(menu,margin(43,49,3,0,0,0));
         root.addView(toolbar,lp(-1,-2));
         View line=new View(this);line.setBackgroundColor(border);root.addView(line,lp(-1,1));
@@ -219,7 +231,7 @@ public final class MainActivity extends Activity {
         movableFeast.setVisibility(move.isEmpty()?View.GONE:View.VISIBLE);
         String favKey=keyForOld(old[1],old[2]);
         boolean favorite=getFavorites().contains(favKey);
-        favoriteButton.setText(favorite?"★":"☆");
+        favoriteButton.setImageResource(favorite?R.drawable.ic_star_filled:R.drawable.ic_star);
         favoriteButton.setContentDescription(favorite?"Прибрати день із вибраного":"Додати день до вибраного");
         CalendarData.Day day=data.getOld(old[1],old[2]);
         String headline=cleanHeading(day.feast);
@@ -231,6 +243,9 @@ public final class MainActivity extends Activity {
         if(hasFeast&&body.equals("• "+headline))body="";
         saints.setVisibility(body.isEmpty()?View.GONE:View.VISIBLE);
         saints.setText(body);
+        prefs.edit().putLong("last_selected_day",selected.getTimeInMillis()).apply();
+        content.animate().cancel();content.setAlpha(.94f);
+        content.animate().alpha(1f).setDuration(180).start();
     }
     private void changeDay(int delta){selected.add(Calendar.DAY_OF_MONTH,delta);update();scrolling.smoothScrollTo(0,0);}
     private void goToday(){selected.setTimeInMillis(System.currentTimeMillis());update();scrolling.smoothScrollTo(0,0);}
