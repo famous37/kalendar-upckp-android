@@ -23,7 +23,7 @@ public final class CalendarData {
     public Day getOld(int month,int day) {
         try {
             JSONObject d=months.getJSONArray(month-1).getJSONObject(day-1);
-            return new Day(d.optString("feast",""),TextCorrections.saints(month,day,d.optString("saints","")),d.optString("note",""));
+            return new Day(TextCorrections.display(d.optString("feast","")),TextCorrections.saints(month,day,d.optString("saints","")),TextCorrections.display(d.optString("note","")));
         } catch(Exception e) { return new Day("","Дані для цієї дати недоступні",""); }
     }
     public static String tidy(String raw) {

@@ -12,6 +12,9 @@ public class CalendarRegressionTest {
             TextCorrections.saints(8,2,"Перенесення мощей архидияк;Стефана"));
         assertEquals("Пам'ять святого",TextCorrections.saints(8,3,"Пам'ять святого"));
     }
+    @Test public void displayNormalizesMixedLatinIInMemorials(){
+        assertEquals("Свт. Лікійський і Прп.",TextCorrections.display("Свт. Лiкiйський i Прп."));
+    }
     @Test public void leapAndCenturyBoundary() {
         assertArrayEquals(new int[]{2024,2,29},CalendarMath.gregorianToJulian(2024,3,13));
         assertArrayEquals(new int[]{2100,2,29},CalendarMath.gregorianToJulian(2100,3,14));
