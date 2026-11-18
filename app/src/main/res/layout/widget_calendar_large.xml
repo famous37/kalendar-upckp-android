@@ -3,7 +3,7 @@
     android:id="@+id/widget_root" android:orientation="vertical" android:gravity="center_vertical"
     android:padding="19dp" android:background="@drawable/widget_background"
     android:layout_width="match_parent" android:layout_height="match_parent">
-    <TextView android:text="ПРАВОСЛАВНИЙ КАЛЕНДАР · УПЦ КП"
+    <TextView android:id="@+id/widget_title" android:text="ПРАВОСЛАВНИЙ КАЛЕНДАР · УПЦ КП"
         android:textSize="11sp" android:textColor="#EAC582" android:textStyle="bold"
         android:layout_width="match_parent" android:layout_height="wrap_content"/>
     <TextView android:id="@+id/widget_date" android:textColor="#FFFFFF"

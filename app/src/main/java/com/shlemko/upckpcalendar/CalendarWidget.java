@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.widget.RemoteViews;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,7 +19,8 @@ public class CalendarWidget extends AppWidgetProvider {
         super.onReceive(context,intent);
         String action=intent.getAction();
         if(Intent.ACTION_DATE_CHANGED.equals(action)||Intent.ACTION_TIME_CHANGED.equals(action)||
-           Intent.ACTION_TIMEZONE_CHANGED.equals(action)||Intent.ACTION_BOOT_COMPLETED.equals(action)){
+           Intent.ACTION_TIMEZONE_CHANGED.equals(action)||Intent.ACTION_BOOT_COMPLETED.equals(action)||
+           Intent.ACTION_CONFIGURATION_CHANGED.equals(action)){
             refreshAll(context);
         }
     }
@@ -39,6 +41,16 @@ public class CalendarWidget extends AppWidgetProvider {
         int y=now.get(Calendar.YEAR),m=now.get(Calendar.MONTH)+1,d=now.get(Calendar.DAY_OF_MONTH);
         int[] old=CalendarMath.gregorianToJulian(y,m,d);
         RemoteViews views=new RemoteViews(context.getPackageName(),layout);
+        boolean dark=UiTheme.isDark(context);
+        views.setInt(R.id.widget_root,"setBackgroundResource",
+            dark?R.drawable.widget_background:R.drawable.widget_background_light);
+        views.setTextColor(R.id.widget_title,Color.parseColor(ThemeTokens.accent(dark)));
+        views.setTextColor(R.id.widget_date,Color.parseColor(ThemeTokens.ink(dark)));
+        views.setTextColor(R.id.widget_saints,Color.parseColor(ThemeTokens.ink(dark)));
+        if(layout==R.layout.widget_calendar_large){
+            views.setTextColor(R.id.widget_civil,Color.parseColor(ThemeTokens.subtle(dark)));
+            views.setTextColor(R.id.widget_fast,Color.parseColor(ThemeTokens.accent(dark)));
+        }
         views.setTextViewText(R.id.widget_date,String.format(Locale.forLanguageTag("uk-UA"),
             "%d %s",old[2],CalendarData.MONTHS[old[1]-1]));
         try{
