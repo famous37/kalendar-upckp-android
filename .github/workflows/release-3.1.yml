@@ -54,12 +54,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="v3.1.0-rc1"
+          tag="v3.1.0-rc2"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "::error::Release tag already exists; refusing to replace signed artifact"
             exit 1
           fi
           gh release create "$tag" Kalendar_UPCKP_3.1_release.apk \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Календар УПЦ КП 3.1 RC1" \
+            --title "Календар УПЦ КП 3.1 RC2" \
             --notes-file RELEASE_NOTES_3.1.md --prerelease
