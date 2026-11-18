@@ -49,6 +49,7 @@ public final class MainActivity extends Activity {
     private int background, surface, ink, subtle, accent, border;
     private static final String[] THEME_NAMES={"Як у системі","Світла","Темна"};
     @Override public void onCreate(Bundle saved) {
+        UiTheme.apply(this);
         super.onCreate(saved);
         prefs=getSharedPreferences("calendar_settings",MODE_PRIVATE);
         try { data=new CalendarData(this); }
@@ -154,7 +155,9 @@ public final class MainActivity extends Activity {
         LinearLayout toolbar=horizontal();toolbar.setPadding(dp(18),dp(14),dp(12),dp(12));
         LinearLayout texts=vertical();
         TextView heading=text("Календар УПЦ КП",19,ink,true);
-        TextView caption=text("Юліанський календар · офлайн",12,subtle,false);
+        heading.setSingleLine(true);heading.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        TextView caption=text("Старий стиль · офлайн",13,subtle,false);
+        caption.setSingleLine(true);caption.setEllipsize(android.text.TextUtils.TruncateAt.END);
         texts.addView(heading);texts.addView(caption,margin(-1,-2,0,2,0,0));
         toolbar.addView(texts,new LinearLayout.LayoutParams(0,-2,1));
         favoriteButton=iconButton(R.drawable.ic_star,"Додати день до вибраного");
@@ -173,7 +176,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout dateCard=vertical();dateCard.setPadding(dp(20),dp(18),dp(20),dp(20));
         dateCard.setBackground(shape(surface,23,border));
-        TextView eyebrow=text("ДЕНЬ ЗА СТАРИМ СТИЛЕМ",11,accent,true);
+        TextView eyebrow=text("ДЕНЬ ЗА СТАРИМ СТИЛЕМ",12,accent,true);
         eyebrow.setLetterSpacing(.10f);dateCard.addView(eyebrow);
         LinearLayout dateRow=horizontal();dateRow.setGravity(Gravity.CENTER_VERTICAL);
         oldDate=text("",29,ink,true);dateRow.addView(oldDate,new LinearLayout.LayoutParams(0,-2,1));
@@ -181,11 +184,11 @@ public final class MainActivity extends Activity {
         cross.setScaleType(ImageView.ScaleType.FIT_CENTER);dateRow.addView(cross,lp(40,52));
         dateCard.addView(dateRow,margin(-1,-2,0,11,0,0));
         newDate=text("",14,subtle,false);dateCard.addView(newDate,margin(-1,-2,0,4,0,0));
-        greeting=text("",13,subtle,false);dateCard.addView(greeting,margin(-1,-2,0,7,0,0));
+        greeting=text("",14,subtle,false);dateCard.addView(greeting,margin(-1,-2,0,7,0,0));
         content.addView(dateCard,lp(-1,-2));
 
         LinearLayout badges=horizontal();badges.setPadding(0,dp(15),0,0);
-        badge=text("",12,accent,true);badge.setPadding(dp(12),dp(7),dp(12),dp(7));
+        badge=text("",13,accent,true);badge.setPadding(dp(12),dp(7),dp(12),dp(7));
         badge.setBackground(shape(dark?Color.parseColor("#342A20"):Color.parseColor("#F4E9D4"),14,0));
         badges.addView(badge);content.addView(badges);
         TextView section=text("Свята та пам’яті святих",20,ink,true);
@@ -206,12 +209,12 @@ public final class MainActivity extends Activity {
 
         LinearLayout nav=horizontal();nav.setPadding(dp(15),dp(10),dp(15),dp(12));
         nav.setBackgroundColor(background);
-        Button previous=button("‹  Попередній",false);previous.setOnClickListener(v->changeDay(-1));
-        nav.addView(previous,new LinearLayout.LayoutParams(0,dp(52),1));
+        Button previous=button("‹",false);previous.setTextSize(TypedValue.COMPLEX_UNIT_SP,26);previous.setOnClickListener(v->changeDay(-1));
+        previous.setContentDescription("Попередній день");nav.addView(previous,new LinearLayout.LayoutParams(0,dp(52),1));
         Button today=button("Сьогодні",true);today.setOnClickListener(v->goToday());
         nav.addView(today,new LinearLayout.LayoutParams(0,dp(52),1));
-        Button next=button("Наступний  ›",false);next.setOnClickListener(v->changeDay(1));
-        nav.addView(next,new LinearLayout.LayoutParams(0,dp(52),1));
+        Button next=button("›",false);next.setTextSize(TypedValue.COMPLEX_UNIT_SP,26);next.setOnClickListener(v->changeDay(1));
+        next.setContentDescription("Наступний день");nav.addView(next,new LinearLayout.LayoutParams(0,dp(52),1));
         root.addView(nav,lp(-1,-2));
         update();
         scrolling.post(()->scrolling.scrollTo(0,scrollTo));
@@ -244,8 +247,7 @@ public final class MainActivity extends Activity {
         saints.setVisibility(body.isEmpty()?View.GONE:View.VISIBLE);
         saints.setText(body);
         prefs.edit().putLong("last_selected_day",selected.getTimeInMillis()).apply();
-        content.animate().cancel();content.setAlpha(.94f);
-        content.animate().alpha(1f).setDuration(180).start();
+        // Avoid repeated view-wide alpha animations that cause flicker during day changes.
     }
     private void changeDay(int delta){selected.add(Calendar.DAY_OF_MONTH,delta);update();scrolling.smoothScrollTo(0,0);}
     private void goToday(){selected.setTimeInMillis(System.currentTimeMillis());update();scrolling.smoothScrollTo(0,0);}
@@ -292,7 +294,7 @@ public final class MainActivity extends Activity {
     private void showThemeDialog(){
         new AlertDialog.Builder(this).setTitle("Оформлення")
             .setSingleChoiceItems(THEME_NAMES,prefs.getInt("theme",0),(dialog,index)->{
-                prefs.edit().putInt("theme",index).apply();dialog.dismiss();build();
+                prefs.edit().putInt("theme",index).apply();dialog.dismiss();recreate();
             }).setNegativeButton("Закрити",null).show();
     }
     private void showSearchDialog(){

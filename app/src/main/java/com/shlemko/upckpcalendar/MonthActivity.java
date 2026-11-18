@@ -61,8 +61,14 @@ public final class MonthActivity extends Activity {
         gold=Color.parseColor(dark?"#E7C27C":"#91631F");
         border=Color.parseColor(dark?"#354454":"#DCD9D1");
         getWindow().setStatusBarColor(bg);getWindow().setNavigationBarColor(bg);
+        boolean light=!dark;
+        int flags=light?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR:0;
+        if(android.os.Build.VERSION.SDK_INT>=26&&light)flags|=View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+        if(android.os.Build.VERSION.SDK_INT>=29)getWindow().setNavigationBarContrastEnforced(false);
     }
     @Override public void onCreate(Bundle state){
+        UiTheme.apply(this);
         super.onCreate(state);
         selected.setTimeInMillis(getIntent().getLongExtra(EXTRA_DATE,System.currentTimeMillis()));
         if(state!=null)selected.setTimeInMillis(state.getLong("selected_date",selected.getTimeInMillis()));
@@ -96,7 +102,7 @@ public final class MonthActivity extends Activity {
         LinearLayout contents=vertical();contents.setPadding(dp(1),0,dp(1),dp(12));
         scroll.addView(contents);
         root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        TextView legend=label("Число вгорі — новий стиль   ·   унизу — старий",12,subtle,false);
+        TextView legend=label("Вгорі — новий стиль, унизу — старий",13,subtle,false);
         legend.setGravity(Gravity.LEFT);contents.addView(legend);
         dates=new GridLayout(this);dates.setColumnCount(7);dates.setUseDefaultMargins(false);
         contents.addView(dates,new LinearLayout.LayoutParams(-1,-2));
@@ -136,9 +142,9 @@ public final class MonthActivity extends Activity {
                 boolean isSelected=year==selected.get(Calendar.YEAR)&&m==selected.get(Calendar.MONTH)+1&&day==selected.get(Calendar.DAY_OF_MONTH);
                 boolean isToday=year==current.get(Calendar.YEAR)&&m==current.get(Calendar.MONTH)+1&&day==current.get(Calendar.DAY_OF_MONTH);
                 boolean feast=!LiturgicalCalendar.movableFeast(year,m,day).isEmpty()||!data.getOld(old[1],old[2]).feast.isEmpty();
-                tile.setBackground(shape(isSelected?gold:card,12,isToday?gold:border));
-                tile.addView(label(String.valueOf(day),17,isSelected?Color.WHITE:ink,true));
-                tile.addView(label(old[2]+" ст.",10,isSelected?Color.WHITE:subtle,false));
+                tile.setBackground(shape(isSelected?Color.parseColor("#72501E"):card,12,isToday?gold:border));
+                tile.addView(label(String.valueOf(day),18,isSelected?Color.WHITE:ink,true));
+                tile.addView(label(String.valueOf(old[2]),12,isSelected?Color.WHITE:subtle,false));
                 TextView dot=label(feast?"●":"",10,isSelected?Color.WHITE:gold,true);tile.addView(dot);
                 tile.setContentDescription(day+" "+new SimpleDateFormat("LLLL",UK).format(civil.getTime())+
                     ", за старим стилем "+old[2]+", "+(feast?"свято або пам'ять":"звичайний день"));
@@ -146,8 +152,7 @@ public final class MonthActivity extends Activity {
             }
             dates.addView(tile,cellParams(71));
         }
-        dates.animate().cancel();dates.setAlpha(.94f);
-        dates.animate().alpha(1f).setDuration(160).start();
+        // Instant grid update avoids ghosting on low-refresh-rate devices.
     }
     private void select(long millis){
         Intent result=new Intent();result.putExtra(EXTRA_DATE,millis);
