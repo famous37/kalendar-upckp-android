@@ -54,12 +54,12 @@ public final class MonthActivity extends Activity {
         SharedPreferences prefs=getSharedPreferences("calendar_settings",MODE_PRIVATE);
         int theme=prefs.getInt("theme",0);
         boolean dark=theme==2||(theme==0&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES);
-        bg=Color.parseColor(dark?"#101722":"#F7F5EF");
-        card=Color.parseColor(dark?"#1D2936":"#FFFEFB");
-        ink=Color.parseColor(dark?"#F5F5F2":"#202D3C");
-        subtle=Color.parseColor(dark?"#B7C1CA":"#526273");
-        gold=Color.parseColor(dark?"#E7C27C":"#91631F");
-        border=Color.parseColor(dark?"#354454":"#DCD9D1");
+        bg=Color.parseColor(ThemeTokens.background(dark));
+        card=Color.parseColor(ThemeTokens.surface(dark));
+        ink=Color.parseColor(ThemeTokens.ink(dark));
+        subtle=Color.parseColor(ThemeTokens.subtle(dark));
+        gold=Color.parseColor(ThemeTokens.accent(dark));
+        border=Color.parseColor(ThemeTokens.border(dark));
         getWindow().setStatusBarColor(bg);getWindow().setNavigationBarColor(bg);
         boolean light=!dark;
         int flags=light?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR:0;

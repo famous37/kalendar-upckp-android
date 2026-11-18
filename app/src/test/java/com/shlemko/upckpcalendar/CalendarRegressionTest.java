@@ -15,6 +15,16 @@ public class CalendarRegressionTest {
     @Test public void displayNormalizesMixedLatinIInMemorials(){
         assertEquals("Свт. Лікійський і Прп.",TextCorrections.display("Свт. Лiкiйський i Прп."));
     }
+    @Test public void normalTextAndBadgesMeetWcagContrast(){
+        for(boolean dark:new boolean[]{false,true}){
+            assertTrue("Body text",ThemeTokens.contrastRatio(
+                ThemeTokens.ink(dark),ThemeTokens.surface(dark))>=7.0);
+            assertTrue("Secondary text",ThemeTokens.contrastRatio(
+                ThemeTokens.subtle(dark),ThemeTokens.surface(dark))>=4.5);
+            assertTrue("Fasting badge",ThemeTokens.contrastRatio(
+                ThemeTokens.accent(dark),ThemeTokens.badge(dark))>=4.5);
+        }
+    }
     @Test public void leapAndCenturyBoundary() {
         assertArrayEquals(new int[]{2024,2,29},CalendarMath.gregorianToJulian(2024,3,13));
         assertArrayEquals(new int[]{2100,2,29},CalendarMath.gregorianToJulian(2100,3,14));

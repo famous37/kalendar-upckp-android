@@ -96,12 +96,12 @@ public final class MainActivity extends Activity {
         int theme=prefs.getInt("theme",0);
         dark=theme==2||(theme==0&&darkSystem());
         fontSize=prefs.getInt("fontSize",18);
-        background=Color.parseColor(dark?"#101722":"#F7F5EF");
-        surface=Color.parseColor(dark?"#1D2936":"#FFFEFB");
-        ink=Color.parseColor(dark?"#F5F5F2":"#202D3C");
-        subtle=Color.parseColor(dark?"#B7C1CA":"#526273");
-        accent=Color.parseColor(dark?"#E7C27C":"#91631F");
-        border=Color.parseColor(dark?"#354454":"#DCD9D1");
+        background=Color.parseColor(ThemeTokens.background(dark));
+        surface=Color.parseColor(ThemeTokens.surface(dark));
+        ink=Color.parseColor(ThemeTokens.ink(dark));
+        subtle=Color.parseColor(ThemeTokens.subtle(dark));
+        accent=Color.parseColor(ThemeTokens.accent(dark));
+        border=Color.parseColor(ThemeTokens.border(dark));
         getWindow().setStatusBarColor(background);getWindow().setNavigationBarColor(background);
         int flags=dark?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         if(Build.VERSION.SDK_INT>=26&&!dark)flags|=View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
@@ -192,7 +192,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout badges=horizontal();badges.setPadding(0,dp(15),0,0);
         badge=text("",13,accent,true);badge.setPadding(dp(12),dp(7),dp(12),dp(7));
-        badge.setBackground(shape(dark?Color.parseColor("#342A20"):Color.parseColor("#F4E9D4"),14,0));
+        badge.setBackground(shape(Color.parseColor(ThemeTokens.badge(dark)),14,0));
         badges.addView(badge);content.addView(badges);
         TextView section=text("Свята та пам’яті святих",20,ink,true);
         content.addView(section,margin(-1,-2,0,23,0,10));
