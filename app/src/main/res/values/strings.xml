@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Календар УПЦ КП</string>
+    <string name="widget_description">Пам’ять дня за старим стилем</string>
+    <string name="widget_compact_description">Компактна дата за старим стилем</string>
+    <string name="widget_large_description">Великий віджет: свята, старий стиль і пости</string>
+</resources>

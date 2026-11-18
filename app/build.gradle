@@ -1,0 +1,45 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.shlemko.upckpcalendar'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.shlemko.upckpcalendar'
+        minSdk 24
+        targetSdk 35
+        versionCode 311
+        versionName '3.1.0-rc2'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        release {
+            if (System.getenv('ANDROID_KEYSTORE_PATH') &&
+                System.getenv('ANDROID_KEYSTORE_PASSWORD') &&
+                System.getenv('ANDROID_KEY_ALIAS') &&
+                System.getenv('ANDROID_KEY_PASSWORD')) {
+                storeFile file(System.getenv('ANDROID_KEYSTORE_PATH'))
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug { minifyEnabled false }
+        release {
+            minifyEnabled false
+            if (System.getenv('ANDROID_KEYSTORE_PATH')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+}
