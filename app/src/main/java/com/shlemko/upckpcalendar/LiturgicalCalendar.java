@@ -69,7 +69,8 @@ public final class LiturgicalCalendar {
         if (jdn >= p - 55 && jdn <= p - 49) return "Сирний тиждень · без м’яса";
         // ISO independent weekday: JDN % 7 = 0 Monday, 2 Wednesday, 4 Friday.
         int weekday = Math.floorMod(jdn, 7);
-        if (weekday == 2 || weekday == 4) return "Середа / п’ятниця · піст за загальним правилом";
+        if (weekday == 2) return "Середа · піст за загальним правилом";
+        if (weekday == 4) return "П’ятниця · піст за загальним правилом";
         return "Пісний період не позначено";
     }
 }

@@ -61,6 +61,10 @@ public class CalendarRegressionTest {
             }
         }
     }
+    @Test public void weekdayFastingBadgesNameActualDay(){
+        assertTrue(LiturgicalCalendar.fastSummary(2026,11,18).startsWith("Середа"));
+        assertTrue(LiturgicalCalendar.fastSummary(2026,11,20).startsWith("П’ятниця"));
+    }
     @Test public void movableFeastsAndFastingOverview(){
         assertTrue(LiturgicalCalendar.movableFeast(2026,4,12).contains("ПАСХА"));
         assertTrue(LiturgicalCalendar.movableFeast(2026,4,5).contains("Вербна"));

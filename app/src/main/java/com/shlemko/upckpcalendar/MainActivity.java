@@ -183,7 +183,7 @@ public final class MainActivity extends Activity {
         eyebrow.setLetterSpacing(.10f);dateCard.addView(eyebrow);
         LinearLayout dateRow=horizontal();dateRow.setGravity(Gravity.CENTER_VERTICAL);
         oldDate=text("",29,ink,true);dateRow.addView(oldDate,new LinearLayout.LayoutParams(0,-2,1));
-        ImageView cross=new ImageView(this);cross.setImageResource(R.drawable.krst_oker);
+        ImageView cross=new ImageView(this);cross.setImageResource(R.drawable.ic_orthodox_cross);cross.setImageTintList(ColorStateList.valueOf(accent));
         cross.setScaleType(ImageView.ScaleType.FIT_CENTER);dateRow.addView(cross,lp(40,52));
         dateCard.addView(dateRow,margin(-1,-2,0,11,0,0));
         newDate=text("",14,subtle,false);dateCard.addView(newDate,margin(-1,-2,0,4,0,0));
