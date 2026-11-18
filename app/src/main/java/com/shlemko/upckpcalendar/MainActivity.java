@@ -16,7 +16,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,6 +38,8 @@ public final class MainActivity extends Activity {
     private CalendarData data;
     private SharedPreferences prefs;
     private LinearLayout root, content;
+    private ScrollView scrolling;
+    private int initialScroll;
     private TextView title, oldDate, newDate, greeting, badge, saints, specialNote, movableFeast;
     private Button favoriteButton;
     private boolean dark;
@@ -53,13 +54,34 @@ public final class MainActivity extends Activity {
             new AlertDialog.Builder(this).setTitle("Помилка читання календаря")
                 .setMessage(e.getMessage()).setPositiveButton("Закрити",(d,w)->finish()).show();return;
         }
-        if(saved!=null)selected.setTimeInMillis(saved.getLong("day",selected.getTimeInMillis()));
+        if(saved!=null) {
+            selected.setTimeInMillis(saved.getLong("day",selected.getTimeInMillis()));
+            initialScroll=saved.getInt("scroll",0);
+        } else if(!getIntent().getBooleanExtra("open_today",false)) {
+            selected.setTimeInMillis(prefs.getLong("last_selected_day",System.currentTimeMillis()));
+            initialScroll=prefs.getInt("last_scroll",0);
+        }
         build();
     }
     @Override protected void onSaveInstanceState(Bundle out) {
-        out.putLong("day",selected.getTimeInMillis());super.onSaveInstanceState(out);
+        out.putLong("day",selected.getTimeInMillis());
+        out.putInt("scroll",scrolling==null?0:scrolling.getScrollY());
+        super.onSaveInstanceState(out);
     }
     @Override protected void onResume(){super.onResume();CalendarWidget.refreshAll(this);}
+    @Override protected void onPause(){
+        prefs.edit().putLong("last_selected_day",selected.getTimeInMillis())
+            .putInt("last_scroll",scrolling==null?0:scrolling.getScrollY()).apply();
+        super.onPause();
+    }
+    @Override protected void onActivityResult(int requestCode,int resultCode,Intent result){
+        super.onActivityResult(requestCode,resultCode,result);
+        if(requestCode==31 && resultCode==RESULT_OK && result!=null){
+            selected.setTimeInMillis(result.getLongExtra(MonthActivity.EXTRA_DATE,selected.getTimeInMillis()));
+            update();
+            if(scrolling!=null)scrolling.smoothScrollTo(0,0);
+        }
+    }
     private boolean darkSystem() {
         int night=getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
         return night==android.content.res.Configuration.UI_MODE_NIGHT_YES;
@@ -68,12 +90,12 @@ public final class MainActivity extends Activity {
         int theme=prefs.getInt("theme",0);
         dark=theme==2||(theme==0&&darkSystem());
         fontSize=prefs.getInt("fontSize",18);
-        background=Color.parseColor(dark?"#0D1420":"#F6F4ED");
-        surface=Color.parseColor(dark?"#192335":"#FFFFFF");
-        ink=Color.parseColor(dark?"#F4F5F7":"#1C2E47");
-        subtle=Color.parseColor(dark?"#ADBBCF":"#66738A");
-        accent=Color.parseColor(dark?"#D4AD65":"#A6752A");
-        border=Color.parseColor(dark?"#304056":"#E9E6DE");
+        background=Color.parseColor(dark?"#101722":"#F7F5EF");
+        surface=Color.parseColor(dark?"#1D2936":"#FFFEFB");
+        ink=Color.parseColor(dark?"#F5F5F2":"#202D3C");
+        subtle=Color.parseColor(dark?"#B7C1CA":"#526273");
+        accent=Color.parseColor(dark?"#E7C27C":"#91631F");
+        border=Color.parseColor(dark?"#354454":"#DCD9D1");
         getWindow().setStatusBarColor(background);getWindow().setNavigationBarColor(background);
         int flags=dark?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         if(Build.VERSION.SDK_INT>=26&&!dark)flags|=View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
@@ -102,11 +124,12 @@ public final class MainActivity extends Activity {
     }
     private Button button(String label,boolean filled){
         Button b=new Button(this);b.setAllCaps(false);b.setText(label);
-        b.setTextSize(TypedValue.COMPLEX_UNIT_SP,14);b.setTextColor(filled?Color.WHITE:ink);
-        b.setBackground(shape(filled?Color.parseColor("#253B59"):surface,14,filled?0:border));
+        b.setTextSize(TypedValue.COMPLEX_UNIT_SP,15);b.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));b.setTextColor(filled?Color.WHITE:ink);
+        b.setBackground(shape(filled?(dark?Color.parseColor("#81602D"):Color.parseColor("#314C60")):surface,15,filled?0:border));
         b.setPadding(dp(10),0,dp(10),0);b.setMinHeight(dp(50));return b;
     }
     private void build(){
+        int scrollTo=scrolling==null?initialScroll:scrolling.getScrollY();
         palette();
         root=vertical();root.setBackgroundColor(background);
         setContentView(root);
@@ -130,7 +153,8 @@ public final class MainActivity extends Activity {
         menu.setOnClickListener(v->showMenu(menu));toolbar.addView(menu,margin(43,49,3,0,0,0));
         root.addView(toolbar,lp(-1,-2));
         View line=new View(this);line.setBackgroundColor(border);root.addView(line,lp(-1,1));
-        ScrollView scrolling=new ScrollView(this);scrolling.setFillViewport(true);scrolling.setVerticalScrollBarEnabled(false);
+        scrolling=new ScrollView(this);scrolling.setFillViewport(true);scrolling.setVerticalScrollBarEnabled(false);
+        scrolling.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         content=vertical();content.setPadding(dp(18),dp(18),dp(18),dp(20));
         scrolling.addView(content,new ScrollView.LayoutParams(-1,-2));
         root.addView(scrolling,new LinearLayout.LayoutParams(-1,0,1));
@@ -173,11 +197,12 @@ public final class MainActivity extends Activity {
         Button previous=button("‹  Попередній",false);previous.setOnClickListener(v->changeDay(-1));
         nav.addView(previous,new LinearLayout.LayoutParams(0,dp(52),1));
         Button today=button("Сьогодні",true);today.setOnClickListener(v->goToday());
-        nav.addView(today,margin(104,52,8,0,8,0));
+        nav.addView(today,new LinearLayout.LayoutParams(0,dp(52),1));
         Button next=button("Наступний  ›",false);next.setOnClickListener(v->changeDay(1));
         nav.addView(next,new LinearLayout.LayoutParams(0,dp(52),1));
         root.addView(nav,lp(-1,-2));
         update();
+        scrolling.post(()->scrolling.scrollTo(0,scrollTo));
     }
     private static String cleanHeading(String a){return a.replaceFirst("^(r\\+|[+_%&-])+\\s*","").trim();}
     private void update(){
@@ -207,8 +232,8 @@ public final class MainActivity extends Activity {
         saints.setVisibility(body.isEmpty()?View.GONE:View.VISIBLE);
         saints.setText(body);
     }
-    private void changeDay(int delta){selected.add(Calendar.DAY_OF_MONTH,delta);update();}
-    private void goToday(){selected.setTimeInMillis(System.currentTimeMillis());update();}
+    private void changeDay(int delta){selected.add(Calendar.DAY_OF_MONTH,delta);update();scrolling.smoothScrollTo(0,0);}
+    private void goToday(){selected.setTimeInMillis(System.currentTimeMillis());update();scrolling.smoothScrollTo(0,0);}
     private void showDatePicker(){
         DatePickerDialog picker=new DatePickerDialog(this,(v,y,m,d)->{
             selected.set(y,m,d,12,0,0);update();
@@ -294,7 +319,7 @@ public final class MainActivity extends Activity {
         startActivity(Intent.createChooser(send,"Поділитися днем"));
     }
     private void showAbout(){
-        new AlertDialog.Builder(this).setTitle("Календар УПЦ КП · 3.0")
+        new AlertDialog.Builder(this).setTitle("Календар УПЦ КП · 3.1")
             .setMessage("Новий нативний застосунок для Android 7 (API 24) і новіших.\n\n"+
                 "Розробник: Vasyl Shlemko\n"+
                 "Оригінальна база пам’ятей: наданий календар 1.1uk.\n\n"+
@@ -305,18 +330,9 @@ public final class MainActivity extends Activity {
     }
 
     private void showMonthPicker() {
-        CalendarView month = new CalendarView(this);
-        month.setDate(selected.getTimeInMillis());
-        final Calendar candidate=(Calendar) selected.clone();
-        month.setOnDateChangeListener((view,y,m,d)->candidate.set(y,m,d,12,0,0));
-        LinearLayout container=vertical();container.setPadding(dp(10),dp(4),dp(10),0);
-        container.addView(month,lp(-1,-2));
-        new AlertDialog.Builder(this).setTitle("Оберіть день місяця")
-            .setView(container)
-            .setPositiveButton("Перейти",(dialog,which)->{
-                selected.setTimeInMillis(candidate.getTimeInMillis());update();
-            }).setNeutralButton("Ввести дату",(dialog,which)->showDatePicker())
-            .setNegativeButton("Скасувати",null).show();
+        Intent intent=new Intent(this,MonthActivity.class);
+        intent.putExtra(MonthActivity.EXTRA_DATE,selected.getTimeInMillis());
+        startActivityForResult(intent,31);
     }
 
     private static String keyForOld(int month,int day) {
