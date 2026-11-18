@@ -1,6 +1,10 @@
 package com.shlemko.upckpcalendar;
 
 import android.content.Context;
+import android.content.ContentValues;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.os.Build;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -10,8 +14,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import static org.junit.Assert.*;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -54,11 +57,16 @@ public class ThemeVisualTest {
     private void capture(String name) throws Exception{
         Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
         assertNotNull("Screenshot of "+name,bitmap);
-        File dir=InstrumentationRegistry.getInstrumentation().getTargetContext().getExternalFilesDir("screenshots");
-        assertNotNull(dir);
-        assertTrue(dir.isDirectory()||dir.mkdirs());
-        File file=new File(dir,name+".png");
-        try(FileOutputStream out=new FileOutputStream(file)){
+        assertTrue("Emulator must support MediaStore scoped storage",Build.VERSION.SDK_INT>=29);
+        Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
+        ContentValues values=new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME,name+".png");
+        values.put(MediaStore.Images.Media.MIME_TYPE,"image/png");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/KalendarThemeQA");
+        Uri uri=context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
+        assertNotNull("MediaStore insert",uri);
+        try(OutputStream out=context.getContentResolver().openOutputStream(uri)){
+            assertNotNull(out);
             assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG,100,out));
         }finally{
             bitmap.recycle();

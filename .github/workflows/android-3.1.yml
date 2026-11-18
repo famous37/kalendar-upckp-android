@@ -78,7 +78,7 @@ jobs:
           script: |
             gradle --no-daemon :app:connectedDebugAndroidTest
             mkdir -p screenshots
-            adb pull /sdcard/Android/data/com.shlemko.upckpcalendar/files/screenshots/. screenshots/ || true
+            adb pull /sdcard/Pictures/KalendarThemeQA/. screenshots/
       - name: Upload light and dark UI screenshots
         uses: actions/upload-artifact@v4
         with:
