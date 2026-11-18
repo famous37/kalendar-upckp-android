@@ -75,4 +75,13 @@ jobs:
           target: google_apis
           profile: pixel_2
           disable-animations: true
-          script: gradle --no-daemon :app:connectedDebugAndroidTest
+          script: |
+            gradle --no-daemon :app:connectedDebugAndroidTest
+            mkdir -p screenshots
+            adb pull /sdcard/Android/data/com.shlemko.upckpcalendar/files/screenshots/. screenshots/ || true
+      - name: Upload light and dark UI screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kalendar-3.1-visual-theme-check
+          path: screenshots/*.png
+          if-no-files-found: warn
