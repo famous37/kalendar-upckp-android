@@ -7,6 +7,7 @@ package com.shlemko.upckpcalendar;
  * No Android dependencies, so formulas are independently testable on the JVM.
  */
 public final class LiturgicalCalendar {
+    static final String NO_FAST_MARK = "Пісний період не позначено";
     private LiturgicalCalendar() { }
 
     /** A name for major movable days. Empty string for ordinary days. */
@@ -53,7 +54,8 @@ public final class LiturgicalCalendar {
         int[] old = CalendarMath.gregorianToJulian(year, month, day);
         int m = old[1], d = old[2];
         int p = CalendarMath.orthodoxPaschaJdn(year);
-        if (jdn >= p-48 && jdn < p) return "Великий піст / Страсний тиждень";
+        if (jdn >= p - 6 && jdn < p) return "Страсний тиждень";
+        if (jdn >= p - 48 && jdn < p - 6) return "Великий піст";
         if (m == 8 && d <= 14) return "Успенський піст";
         if ((m == 11 && d >= 15) || (m == 12 && d <= 24)) return "Різдвяний піст";
         int apostlesStart = p + 57;
@@ -71,6 +73,6 @@ public final class LiturgicalCalendar {
         int weekday = Math.floorMod(jdn, 7);
         if (weekday == 2) return "Середа · піст за загальним правилом";
         if (weekday == 4) return "П’ятниця · піст за загальним правилом";
-        return "Пісний період не позначено";
+        return NO_FAST_MARK;
     }
 }

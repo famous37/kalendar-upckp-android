@@ -5,7 +5,7 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
     <TextView android:id="@+id/widget_title" android:text="СТАРИЙ СТИЛЬ" android:textSize="10sp" android:textColor="#EAC582"
         android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-    <TextView android:id="@+id/widget_date" android:textColor="#FFFFFF"
+    <TextView android:id="@+id/widget_date" android:fontFamily="serif" android:textColor="#FFFFFF"
         android:textSize="19sp" android:textStyle="bold" android:maxLines="1"
         android:ellipsize="end" android:layout_width="match_parent" android:layout_height="wrap_content"/>
     <TextView android:id="@+id/widget_saints" android:textColor="#EBE7DF"

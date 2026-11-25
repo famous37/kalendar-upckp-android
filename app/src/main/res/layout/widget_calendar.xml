@@ -3,10 +3,10 @@
     android:id="@+id/widget_root" android:orientation="vertical" android:padding="15dp"
     android:background="@drawable/widget_background"
     android:layout_width="match_parent" android:layout_height="match_parent">
-    <TextView android:id="@+id/widget_title" android:text="КАЛЕНДАР УПЦ КП · СТАРИЙ СТИЛЬ"
+    <TextView android:id="@+id/widget_title" android:text="ЦЕРКОВНИЙ КАЛЕНДАР"
         android:letterSpacing="0.04" android:textColor="#EAC582" android:textSize="11sp"
         android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-    <TextView android:id="@+id/widget_date" android:textColor="#FFFFFF"
+    <TextView android:id="@+id/widget_date" android:fontFamily="serif" android:textColor="#FFFFFF"
         android:textSize="22sp" android:textStyle="bold" android:maxLines="1"
         android:ellipsize="end" android:layout_marginTop="5dp"
         android:layout_width="match_parent" android:layout_height="wrap_content"/>

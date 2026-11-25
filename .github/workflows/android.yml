@@ -1,0 +1,109 @@
+name: Church Calendar Android
+on:
+  push:
+    branches: [main, church-calendar-4-beta1]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      signed: ${{ steps.package.outputs.signed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.11.1'}
+      - name: Build and test
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:assembleRelease
+      - name: Prepare beta package
+        id: package
+        env:
+          KEYSTORE: ${{ github.event_name == 'push' && github.ref_name == 'church-calendar-4-beta1' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p package
+          cp app/build/outputs/apk/release/app-release-unsigned.apk package/calendar-unsigned.apk
+          if [[ -n "$KEYSTORE" && -n "$STORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
+            umask 077
+            key="$RUNNER_TEMP/calendar-signing"
+            trap 'rm -f "$key"' EXIT
+            printf '%s' "$KEYSTORE" | base64 -d > "$key"
+            signer="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+            "$signer" sign --ks "$key" --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD \
+              --out package/Tserkovnyi-Kalendar-4.0.0-beta.1.apk package/calendar-unsigned.apk
+            "$signer" verify --verbose package/Tserkovnyi-Kalendar-4.0.0-beta.1.apk
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: calendar-release-build
+          path: package/*.apk
+          if-no-files-found: error
+
+  emulator:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [30, 35]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.11.1'}
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            gradle --no-daemon :app:connectedDebugAndroidTest
+            mkdir -p screenshots
+            adb pull /sdcard/Pictures/KalendarThemeQA/. screenshots/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-${{ matrix.api }}-ui
+          path: |
+            screenshots/*.png
+            app/build/outputs/androidTest-results/connected/
+          if-no-files-found: warn
+
+  publish:
+    needs: [build, emulator]
+    if: github.event_name == 'push' && github.ref_name == 'church-calendar-4-beta1' && needs.build.outputs.signed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: calendar-release-build
+          path: package
+      - name: Publish verified beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v4.0.0-beta.1 package/Tserkovnyi-Kalendar-4.0.0-beta.1.apk \
+            --target "$GITHUB_SHA" --title 'Церковний календар · 4.0.0 Бета 1' --prerelease --notes-file RELEASE_NOTES.md

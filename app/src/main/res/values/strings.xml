@@ -1,6 +1,9 @@
 <resources>
-    <string name="app_name">Календар УПЦ КП</string>
-    <string name="widget_description">Пам’ять дня за старим стилем</string>
-    <string name="widget_compact_description">Компактна дата за старим стилем</string>
-    <string name="widget_large_description">Великий віджет: свята, старий стиль і пости</string>
+    <string name="app_name">Церковний календар</string>
+    <string name="widget_description">Дата і пам’ять святих</string>
+    <string name="widget_compact_description">Дата за старим стилем</string>
+    <string name="widget_large_description">Свята, святі дня і піст</string>
+    <string name="calendar_source">Створено на основі календаря Української Православної Церкви Київського Патріархату (УПЦ КП).</string>
+    <string name="dedication">Пам’яті Патріарха Філарета, який до останніх днів свого життя дотримувався цього церковного календаря.</string>
+    <string name="developer_credit">Розробник: Василь Шлемко</string>
 </resources>

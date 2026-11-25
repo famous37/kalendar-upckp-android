@@ -31,8 +31,8 @@ public class ThemeVisualTest {
 
     @Test public void screenshotLightAndDarkHomeAndMonth() throws Exception {
         try{
-            verify(1,"light",Color.parseColor("#F7F5EF"));
-            verify(2,"dark",Color.parseColor("#101722"));
+            verify(1,"light",Color.parseColor("#F8F5EF"));
+            verify(2,"dark",Color.parseColor("#1A1719"));
         } finally {
             Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
             context.getSharedPreferences("calendar_settings",Context.MODE_PRIVATE)
@@ -44,15 +44,18 @@ public class ThemeVisualTest {
         SharedPreferences p=context.getSharedPreferences("calendar_settings",Context.MODE_PRIVATE);
         assertTrue(p.edit().putInt("theme",mode).commit());
         rule.getScenario().onActivity(activity->activity.recreate());
-        onView(withText("Календар УПЦ КП")).check(matches(isDisplayed()));
+        onView(withText("Церковний календар")).check(matches(isDisplayed()));
         rule.getScenario().onActivity(activity->
-            assertEquals("Status-bar color "+tag,expectedBarColor,
-                activity.getWindow().getStatusBarColor()));
+            assertEquals("Page background "+tag,expectedBarColor,activity.ui.bg));
         capture(tag+"-home");
-        onView(withContentDescription("Календар місяця")).perform(click());
-        onView(withText("Календар місяця")).check(matches(isDisplayed()));
+        onView(withContentDescription("Місяць")).perform(click());
+        onView(withContentDescription("Попередній місяць")).check(matches(isDisplayed()));
         capture(tag+"-month");
-        onView(withContentDescription("Повернутися до дня")).perform(click());
+        onView(withContentDescription("Налаштування")).perform(click());
+        onView(withText("Про застосунок")).perform(click());
+        onView(withText(R.string.dedication)).check(matches(isDisplayed()));
+        capture(tag+"-about");
+        onView(withContentDescription("День")).perform(click());
     }
     private void capture(String name) throws Exception{
         Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();

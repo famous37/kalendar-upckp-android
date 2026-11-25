@@ -37,7 +37,7 @@ public class CalendarWidget extends AppWidgetProvider {
         for(int id:manager.getAppWidgetIds(new ComponentName(context,type)))render(context,manager,id,layout);
     }
     private static void render(Context context,AppWidgetManager manager,int id,int layout){
-        Calendar now=Calendar.getInstance();
+        Calendar now=new java.util.GregorianCalendar();
         int y=now.get(Calendar.YEAR),m=now.get(Calendar.MONTH)+1,d=now.get(Calendar.DAY_OF_MONTH);
         int[] old=CalendarMath.gregorianToJulian(y,m,d);
         RemoteViews views=new RemoteViews(context.getPackageName(),layout);
@@ -45,6 +45,7 @@ public class CalendarWidget extends AppWidgetProvider {
         views.setInt(R.id.widget_root,"setBackgroundResource",
             dark?R.drawable.widget_background:R.drawable.widget_background_light);
         views.setTextColor(R.id.widget_title,Color.parseColor(ThemeTokens.accent(dark)));
+        views.setTextViewText(R.id.widget_title, layout == R.layout.widget_calendar_compact ? "СТАРИЙ СТИЛЬ" : "Церковний календар · ст. ст.");
         views.setTextColor(R.id.widget_date,Color.parseColor(ThemeTokens.ink(dark)));
         views.setTextColor(R.id.widget_saints,Color.parseColor(ThemeTokens.ink(dark)));
         if(layout==R.layout.widget_calendar_large){
@@ -54,12 +55,12 @@ public class CalendarWidget extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_date,String.format(Locale.forLanguageTag("uk-UA"),
             "%d %s",old[2],CalendarData.MONTHS[old[1]-1]));
         try{
-            CalendarData.Day data=new CalendarData(context).getOld(old[1],old[2]);
+            CalendarData.Day data=CalendarData.load(context).getOld(old[1],old[2]);
             String movable=LiturgicalCalendar.movableFeast(y,m,d);
             views.setTextViewText(R.id.widget_saints,movable.isEmpty()?data.headline():movable);
         }catch(Exception e){views.setTextViewText(R.id.widget_saints,"Відкрити календар");}
         if(layout==R.layout.widget_calendar_large){
-            views.setTextViewText(R.id.widget_civil,"Новий стиль: "+
+            views.setTextViewText(R.id.widget_civil, "Цивільна дата · "+
                 new SimpleDateFormat("d MMMM yyyy",Locale.forLanguageTag("uk-UA")).format(now.getTime()));
             views.setTextViewText(R.id.widget_fast,LiturgicalCalendar.fastSummary(y,m,d));
         }
