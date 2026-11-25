@@ -64,8 +64,8 @@ final class MonthPage {
                     boolean selected = date.jdn == a.date.jdn;
                     boolean current = date.jdn == today;
                     cell.setBackground(ui.pressed(selected ? WINE : 0, 11, current ? (selected ? GOLD : ui.accent) : 0));
-                    cell.addView(ui.serif(String.valueOf(d), 20, selected ? PAPER : i == 6 ? ui.accent : ui.ink));
-                    cell.addView(ui.text(String.valueOf(date.old[2]), 11, selected ? GOLD : ui.muted));
+                    cell.addView(ui.serif(String.valueOf(d), 20, selected ? PAPER : i == 6 ? ui.accent : ui.ink), ui.box(WRAP, WRAP));
+                    cell.addView(ui.text(String.valueOf(date.old[2]), 11, selected ? GOLD : ui.muted), ui.box(WRAP, WRAP));
                     View dot = new View(a);
                     int color = feast ? selected ? GOLD : ui.accent : 0;
                     dot.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);

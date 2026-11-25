@@ -159,6 +159,7 @@ public final class MainActivity extends Activity {
             if (active) glyph.setBackground(ui.shape(ui.blush, 14, 0));
             item.addView(glyph, ui.box(50,26));
             TextView label = ui.text(TAB_NAMES[i], 12, active ? ui.accent : ui.muted);
+            label.setGravity(Gravity.CENTER);
             if (active) label.setTypeface(MEDIUM);
             item.addView(label);
             item.setSelected(active);

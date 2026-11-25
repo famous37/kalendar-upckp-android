@@ -57,7 +57,14 @@ public class CalendarUiTest {
         onView(withText("Листопад 2026")).check(matches(isDisplayed()));
         onView(withContentDescription("Наступний місяць")).perform(click());
         onView(withText("Грудень 2026")).check(matches(isDisplayed()));
-        onView(withContentDescription(startsWith("Четвер, 3 грудня 2026,"))).perform(click());
+        onView(withContentDescription(startsWith("Четвер, 3 грудня 2026,"))).check((v, error) -> {
+            if (error != null) throw error;
+            android.view.ViewGroup cell = (android.view.ViewGroup)v;
+            for (int i = 0; i < 2; i++) {
+                android.view.View number = cell.getChildAt(i);
+                assertEquals(cell.getWidth(), number.getLeft() + number.getRight(), 2);
+            }
+        }).perform(click());
         onView(withText("20 листопада")).check(matches(isDisplayed()));
         pressBack();
         onView(withText("Грудень 2026")).check(matches(isDisplayed()));
