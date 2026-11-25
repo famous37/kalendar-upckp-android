@@ -1,0 +1,64 @@
+name: Publish signed Church Calendar beta
+on:
+  push:
+    branches: [publish/church-calendar-4-beta1]
+permissions:
+  actions: read
+  checks: read
+  contents: write
+env:
+  SOURCE_RUN: '45614273950'
+  SOURCE_SHA: 'fca3edf36495ba7eb8d91b6877bc4551ea207444'
+  APK: Tserkovnyi-Kalendar-4.0.0-beta.1.apk
+  APK_SHA256: '1ba13478ccccd6732198be272123d579b61ad32e878a831eb436676fac41c07c'
+  CERT_SHA256: '4d70cfeb69d752660031aedd1dbbb526a28ec0db44ef680899bd6623a536bfe4'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: calendar-release-build
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/calendar-unsigned
+      - name: Reproduce and verify the signed package
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/calendar-distribution"
+          git init -q "$out"
+          cp "$RUNNER_TEMP/calendar-unsigned/calendar-unsigned.apk" "$out/$APK"
+          git -C "$out" apply --binary "$GITHUB_WORKSPACE/publication/beta-signature.patch"
+          printf '%s  %s\n' "$APK_SHA256" "$out/$APK" | sha256sum -c -
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$out/$APK" > "$RUNNER_TEMP/certificate.txt"
+          grep -Fx "Signer #1 certificate SHA-256 digest: $CERT_SHA256" "$RUNNER_TEMP/certificate.txt"
+          "$tools/zipalign" -c 4 "$out/$APK"
+      - name: Prepare side-by-side installation test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v3.0.0-beta.1 --pattern Kalendar_UPCKP_3.0_Beta1.apk --dir "$RUNNER_TEMP/old-calendar"
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install and open the signed release on Android 17
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: '37.0'
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: bash publication/smoke.sh
+      - name: Publish after the source checks pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run watch "$SOURCE_RUN" --exit-status --interval 15
+          test "$(gh run view "$SOURCE_RUN" --json headSha --jq .headSha)" = "$SOURCE_SHA"
+          test "$(gh run view "$SOURCE_RUN" --json event --jq .event)" = push
+          gh release create v4.0.0-beta.1 "$RUNNER_TEMP/calendar-distribution/$APK" \
+            --target "$SOURCE_SHA" --title 'Церковний календар · 4.0.0 Бета 1' --prerelease --notes-file RELEASE_NOTES.md
