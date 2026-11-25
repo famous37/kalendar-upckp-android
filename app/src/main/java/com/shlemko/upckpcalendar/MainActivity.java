@@ -169,8 +169,7 @@ public final class MainActivity extends Activity {
                 if (target == screen) return;
                 detailOrigin = Screen.DAY;
                 if (target == Screen.MONTH) monthAnchor = date.jdn;
-                if (target == Screen.SEARCH || target == Screen.FAVORITES) { browseTop = 0; browseFirst = 0; }
-                navigate(target);
+                navigate(target, target == Screen.SEARCH || target == Screen.FAVORITES);
             });
             tabs.addView(item, ui.flex());
         }
@@ -197,8 +196,10 @@ public final class MainActivity extends Activity {
             dayPage.post(() -> dayPage.scrollTo(0, y));
         }
     }
-    void navigate(Screen target) {
+    void navigate(Screen target) { navigate(target, false); }
+    private void navigate(Screen target, boolean resetList) {
         remember();
+        if (resetList) { browseFirst = 0; browseTop = 0; }
         if (screen == Screen.SEARCH) {
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(root.getWindowToken(), 0);
             root.requestFocus();

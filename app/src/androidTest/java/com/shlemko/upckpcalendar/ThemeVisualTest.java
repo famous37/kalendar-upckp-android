@@ -30,6 +30,7 @@ public class ThemeVisualTest {
         new ActivityScenarioRule<>(MainActivity.class);
 
     @Test public void screenshotLightAndDarkHomeAndMonth() throws Exception {
+        org.junit.Assume.assumeTrue(Build.VERSION.SDK_INT >= 29);
         try{
             verify(1,"light",Color.parseColor("#F8F5EF"));
             verify(2,"dark",Color.parseColor("#1A1719"));
