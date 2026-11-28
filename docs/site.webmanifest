@@ -1,7 +1,7 @@
 {
   "name": "Церковний календар УПЦ КП",
   "short_name": "Календар УПЦ КП",
-  "description": "Церковний календар за старим стилем. Працює офлайн.",
+  "description": "Церковний календар за юліанським стилем",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,8 +10,14 @@
   "lang": "uk",
   "icons": [
     {
-      "src": "./icon.png",
-      "sizes": "any",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
