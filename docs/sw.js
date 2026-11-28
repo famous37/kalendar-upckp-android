@@ -1,6 +1,6 @@
 /* Церковний календар — офлайн-кеш вебверсії 3.1 */
-const CACHE = 'upckp-html-v3.1.0';
-const ASSETS = ['./', './index.html', './site.webmanifest', './icon.png'];
+const CACHE = 'upckp-html-v3.1.1';
+const ASSETS = ['./', './index.html', './site.webmanifest', './icon.png', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
