@@ -51,3 +51,5 @@ jobs:
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Redeploy website after enabling GitHub Pages in repository settings.
