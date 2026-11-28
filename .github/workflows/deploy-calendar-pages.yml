@@ -37,6 +37,19 @@ jobs:
               original.resize((size, size), Image.Resampling.LANCZOS).save(f'docs/icon-{size}.png', optimize=True)
           PY
 
+      - name: Refresh PWA cache version for every deployment
+        env:
+          DEPLOY_REVISION: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          p = Path('docs/sw.js')
+          data = p.read_text(encoding='utf-8')
+          assert '__DEPLOY_REVISION__' in data
+          p.write_text(data.replace('__DEPLOY_REVISION__', os.environ['DEPLOY_REVISION'][:12]), encoding='utf-8')
+          PY
+
       - name: Verify files
         run: |
           python - <<'PY'
