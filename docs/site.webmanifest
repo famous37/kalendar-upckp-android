@@ -1,0 +1,19 @@
+{
+  "name": "Церковний календар УПЦ КП",
+  "short_name": "Календар УПЦ КП",
+  "description": "Церковний календар за старим стилем. Працює офлайн.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6f1",
+  "theme_color": "#14232d",
+  "lang": "uk",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
