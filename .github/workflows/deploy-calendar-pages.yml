@@ -1,0 +1,53 @@
+name: Publish Calendar Website (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-calendar-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out website
+        uses: actions/checkout@v4
+
+      - name: Verify files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ('index.html', 'sw.js', 'site.webmanifest', 'icon.png'):
+              path = Path('docs') / name
+              assert path.is_file() and path.stat().st_size > 0, f'Missing: {path}'
+          html = Path('docs/index.html').read_text(encoding='utf-8')
+          assert 'Церковний календар УПЦ КП' in html
+          assert '</html>' in html
+          print('Website files verified')
+          PY
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./docs
+
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
