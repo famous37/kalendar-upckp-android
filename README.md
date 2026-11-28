@@ -30,3 +30,13 @@ gradle :app:connectedDebugAndroidTest
 ```
 
 Для підписаної збірки Gradle використовує `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` і `ANDROID_KEY_PASSWORD`. Ідентифікатор бета-застосунку — `com.shlemko.upckpcalendar.beta`.
+
+## Вебкалендар (HTML / PWA)
+
+Вебверсія календаря доступна у папці [`docs/`](https://github.com/famous37/kalendar-upckp-android/tree/main/docs). Вона містить самодостатній HTML-календар, вебманіфест, іконку та service worker для роботи офлайн.
+
+**GitHub Pages:** `https://famous37.github.io/kalendar-upckp-android/` — посилання стане активним після одноразового ввімкнення **Settings → Pages → Build and deployment → GitHub Actions**.
+
+[Сценарій розгортання](https://github.com/famous37/kalendar-upckp-android/actions/workflows/deploy-calendar-pages.yml)
+
+> Це окрема вебверсія 3.0; її календарні приписи слід звіряти з офіційним виданням.
